@@ -1,9 +1,7 @@
 {
-  "AWSTemplateFormatVersion" : "2010-09-09",
-
-  "Description" : "Architecture for data processing. Get data from Kinesis, process via Lambda function and send it DynamoDB and CloudWatch",
-
-  "Parameters" : {
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Architecture for data processing. Get data from Kinesis, process via Lambda function and send it DynamoDB and CloudWatch",
+  "Parameters": {
     "ExistingSecurityGroups": {
       "Type": "List<AWS::EC2::SecurityGroup::Id>"
     },
@@ -14,7 +12,10 @@
     "InstanceType": {
       "Type": "String",
       "Default": "t2.micro",
-      "AllowedValues": ["t2.micro", "m1.small"]
+      "AllowedValues": [
+        "t2.micro",
+        "m1.small"
+      ]
     },
     "OperatorEMail": {
       "Description": "EMail address to notify if there are any scaling operations",
@@ -56,86 +57,193 @@
       "ConstraintDescription": "must be between 5 and 10000"
     }
   },
-
   "Mappings": {
-    "AWSInstanceType2Arch" : {
-      "t2.micro"    : { "Arch" : "HVM64"  },
-      "m1.small"    : { "Arch" : "PV64"   }
+    "AWSInstanceType2Arch": {
+      "t2.micro": {
+        "Arch": "HVM64"
+      },
+      "m1.small": {
+        "Arch": "PV64"
+      }
     },
-    "AWSRegionArch2AMI" : {
-      "us-east-1"        : {"PV64" : "ami-1ccae774", "HVM64" : "ami-1ecae776"},
-      "us-west-2"        : {"PV64" : "ami-ff527ecf", "HVM64" : "ami-e7527ed7"},
-      "us-west-1"        : {"PV64" : "ami-d514f291", "HVM64" : "ami-d114f295"},
-      "eu-west-1"        : {"PV64" : "ami-bf0897c8", "HVM64" : "ami-a10897d6"},
-      "eu-central-1"     : {"PV64" : "ami-ac221fb1", "HVM64" : "ami-a8221fb5"},
-      "ap-northeast-1"   : {"PV64" : "ami-27f90e27", "HVM64" : "ami-cbf90ecb"},
-      "ap-southeast-1"   : {"PV64" : "ami-acd9e8fe", "HVM64" : "ami-68d8e93a"},
-      "ap-southeast-2"   : {"PV64" : "ami-ff9cecc5", "HVM64" : "ami-fd9cecc7"},
-      "sa-east-1"        : {"PV64" : "ami-bb2890a6", "HVM64" : "ami-b52890a8"},
-      "cn-north-1"       : {"PV64" : "ami-fa39abc3", "HVM64" : "ami-f239abcb"}
+    "AWSRegionArch2AMI": {
+      "us-east-1": {
+        "PV64": "ami-1ccae774",
+        "HVM64": "ami-1ecae776"
+      },
+      "us-west-2": {
+        "PV64": "ami-ff527ecf",
+        "HVM64": "ami-e7527ed7"
+      },
+      "us-west-1": {
+        "PV64": "ami-d514f291",
+        "HVM64": "ami-d114f295"
+      },
+      "eu-west-1": {
+        "PV64": "ami-bf0897c8",
+        "HVM64": "ami-a10897d6"
+      },
+      "eu-central-1": {
+        "PV64": "ami-ac221fb1",
+        "HVM64": "ami-a8221fb5"
+      },
+      "ap-northeast-1": {
+        "PV64": "ami-27f90e27",
+        "HVM64": "ami-cbf90ecb"
+      },
+      "ap-southeast-1": {
+        "PV64": "ami-acd9e8fe",
+        "HVM64": "ami-68d8e93a"
+      },
+      "ap-southeast-2": {
+        "PV64": "ami-ff9cecc5",
+        "HVM64": "ami-fd9cecc7"
+      },
+      "sa-east-1": {
+        "PV64": "ami-bb2890a6",
+        "HVM64": "ami-b52890a8"
+      },
+      "cn-north-1": {
+        "PV64": "ami-fa39abc3",
+        "HVM64": "ami-f239abcb"
+      }
     }
   },
-
-  "Resources" : {
+  "Resources": {
     "SecurityGroup": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
         "GroupDescription": "Allow HTTP traffic to the host",
-        "VpcId": { "Ref": "ExistingVPC" },
-        "SecurityGroupIngress": [{
-          "IpProtocol": "tcp",
-          "FromPort": "80",
-          "ToPort": "80",
-          "CidrIp": "0.0.0.0/0"
-        }],
-        "SecurityGroupEgress": [{
-          "IpProtocol": "tcp",
-          "FromPort": "80",
-          "ToPort": "80",
-          "CidrIp": "0.0.0.0/0"
-        }]
+        "VpcId": {
+          "Ref": "ExistingVPC"
+        },
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "80",
+            "ToPort": "80",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "SecurityGroupEgress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": "80",
+            "ToPort": "80",
+            "CidrIp": "0.0.0.0/0"
+          }
+        ]
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "40f1acb7-141e-4206-a8ba-4edd2369938b"
+        }
       }
     },
     "AllSecurityGroups": {
       "Type": "Custom::Split",
       "Properties": {
-        "ServiceToken": { "Fn::GetAtt": ["AppendItemToListFunction", "Arn"] },
-        "List": { "Ref": "ExistingSecurityGroups" },
-        "AppendItem": { "Ref": "SecurityGroup" }
+        "ServiceToken": {
+          "Fn::GetAtt": [
+            "AppendItemToListFunction",
+            "Arn"
+          ]
+        },
+        "List": {
+          "Ref": "ExistingSecurityGroups"
+        },
+        "AppendItem": {
+          "Ref": "SecurityGroup"
+        }
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "d575946e-5766-42bb-9bfe-54659c1b01f7"
+        }
       }
     },
     "AppendItemToListFunction": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
         "Handler": "index.handler",
-        "Role": { "Fn::GetAtt" : ["LambdaExecutionRole", "Arn"] },
+        "Role": {
+          "Fn::GetAtt": [
+            "LambdaExecutionRole",
+            "Arn"
+          ]
+        },
         "Code": {
-          "ZipFile":  { "Fn::Join": ["", [
-            "var response = require('cfn-response');",
-            "exports.handler = function(event, context) {",
-            "   var responseData = {Value: event.ResourceProperties.List};",
-            "   responseData.Value.push(event.ResourceProperties.AppendedItem);",
-            "   response.send(event, context, response.SUCCESS, responseData);",
-            "};"
-          ]]}
+          "ZipFile": {
+            "Fn::Join": [
+              "",
+              [
+                "var response = require('cfn-response');",
+                "exports.handler = function(event, context) {",
+                "   var responseData = {Value: event.ResourceProperties.List};",
+                "   responseData.Value.push(event.ResourceProperties.AppendedItem);",
+                "   response.send(event, context, response.SUCCESS, responseData);",
+                "};"
+              ]
+            ]
+          }
         },
         "Runtime": "nodejs4.3"
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "9f1823d0-c602-43da-bc2e-73b714557816"
+        }
       }
     },
     "NotificationTopic": {
       "Type": "AWS::SNS::Topic",
       "Properties": {
-        "Subscription": [ { "Endpoint": { "Ref": "OperatorEMail" }, "Protocol": "email" }]
+        "Subscription": [
+          {
+            "Endpoint": {
+              "Ref": "OperatorEMail"
+            },
+            "Protocol": "email"
+          }
+        ]
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "3b409707-2579-4da0-af6d-c5d1bf9f2b83"
+        }
+      }
+    },
+    "LaunchConfig": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Properties": {
+        "ImageId": {
+          "Fn::FindInMap": [
+            "AWSRegionArch2AMI",
+            { "Ref": "AWS::Region" },
+            {
+              "Fn::FindInMap": [
+                "AWSInstanceType2Arch", { "Ref": "InstanceType" }, "Arch"
+              ]
+            }
+
+          ]
+        },
+        "InstanceType": { "Ref": "InstanceType"},
+        "IamInstanceProfile": { "Ref": "RootInstanceProfile"}
       }
     },
     "AutoScalingGroup": {
-      "Type" : "AWS::AutoScaling::AutoScalingGroup",
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
-        "LaunchConfigurationName": { "Ref": "LaunchConfig" },
+        "LaunchConfigurationName": {
+          "Ref": "LaunchConfig"
+        },
         "MinSize": "1",
         "MaxSize": "3",
         "NotificationConfiguration": {
-          "TopicARN": { "Ref": "NotificationTopic" },
+          "TopicARN": {
+            "Ref": "NotificationTopic"
+          },
           "NotificationTypes": [
             "autoscaling::EC2_INSTANCE_LAUNCH",
             "autoscaling::EC2_INSTANCE_LAUNCH_ERROR",
@@ -143,78 +251,136 @@
             "autoscaling::EC2_INSTANCE_TERMINATE_ERROR"
           ]
         }
-
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "08601ed7-8c6c-4b80-b903-9025b73e0fb0"
+        }
       }
-
     },
-    "ScaleUpPolicy" : {
+    "ScaleUpPolicy": {
       "Type": "AWS::AutoScaling::ScalingPolicy",
       "Properties": {
         "AdjustmentType": "ChangeInCapacity",
-        "AutoScalingGroupName": { "Ref" : "AutoScalingGroup"},
+        "AutoScalingGroupName": {
+          "Ref": "AutoScalingGroup"
+        },
         "Cooldown": "60",
         "ScalingAdjustment": "1"
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "e3f84ff1-9cca-40a1-8cd7-0f7163e93ac4"
+        }
       }
     },
-    "ScaleDownPolicy" : {
-      "Type" : "AWS::AutoScaling::ScalingPolicy",
-      "Properties" : {
-        "AdjustmentType" : "ChangeInCapacity",
-        "AutoScalingGroupName" : { "Ref" : "AutoScalingGroup"},
-        "Cooldown" : "60",
+    "ScaleDownPolicy": {
+      "Type": "AWS::AutoScaling::ScalingPolicy",
+      "Properties": {
+        "AdjustmentType": "ChangeInCapacity",
+        "AutoScalingGroupName": {
+          "Ref": "AutoScalingGroup"
+        },
+        "Cooldown": "60",
         "ScalingAdjustment": "-1"
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "2a696356-1325-4410-8841-ab39dce56df3"
+        }
       }
     },
-    "CPUAlarmHigh" : {
-      "Type" : "AWS::CloudWatch::Alarm",
-      "Properties" : {
-        "AlarmDescription" : "Alarm if CPU too high or metric disappears indicating instance is down",
-        "MetricName" : "CPUUtilization",
-        "EvaluationPeriods" : "2",
-        "Statistic" : "Average",
-        "Threshold" : "90",
-        "Period" : "300",
-        "AlarmActions" : [{ "Ref" : "ScaleUpPolicy" }],
+    "CPUAlarmHigh": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "Alarm if CPU too high or metric disappears indicating instance is down",
+        "MetricName": "CPUUtilization",
+        "EvaluationPeriods": "2",
+        "Statistic": "Average",
+        "Threshold": "90",
+        "Period": "300",
+        "AlarmActions": [
+          {
+            "Ref": "ScaleUpPolicy"
+          }
+        ],
         "Namespace": "AWS/EC2",
-        "Dimensions" : [{
-          "Name" : "AutoScalingGroupName",
-          "Value" : { "Ref" : "AutoScalingGroup"}
-        }],
-        "ComparisonOperator" : "GreaterThanThreshold"
+        "Dimensions": [
+          {
+            "Name": "AutoScalingGroupName",
+            "Value": {
+              "Ref": "AutoScalingGroup"
+            }
+          }
+        ],
+        "ComparisonOperator": "GreaterThanThreshold"
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "c7c59f5d-b277-4268-be14-5a026fd21afd"
+        }
       }
     },
     "CPUAlarmLow": {
-      "Type" : "AWS::CloudWatch::Alarm",
-      "Properties" : {
-        "AlarmDescription" : "Scale-down if CPU < 70% for 10 minutes",
-        "MetricName" : "CPUUtilization",
-        "Namespace" : "AWS/EC2",
-        "Statistic" : "Avareage",
-        "Period" : "300",
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "Scale-down if CPU < 70% for 10 minutes",
+        "MetricName": "CPUUtilization",
+        "Namespace": "AWS/EC2",
+        "Statistic": "Avareage",
+        "Period": "300",
         "EvaluationPeriods": "2",
-        "Threshold" : "70",
-        "AlarmActions" : { "Ref" : "ScaleDownPolicy" },
-        "Dimensions" : [{
-          "Name" : "AutoScalingGroupName",
-          "Value" : { "Ref" : "AutoScalingGroup" }
-        }],
-        "ComparisonOperator" : "LessThanThreshold"
+        "Threshold": "70",
+        "AlarmActions": {
+          "Ref": "ScaleDownPolicy"
+        },
+        "Dimensions": [
+          {
+            "Name": "AutoScalingGroupName",
+            "Value": {
+              "Ref": "AutoScalingGroup"
+            }
+          }
+        ],
+        "ComparisonOperator": "LessThanThreshold"
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "d79d023e-5e71-4966-b5fb-36c272fc964d"
+        }
       }
     },
     "SensorDynamoDBTable": {
       "Type": "AWS::DynamoDB::Table",
       "Properties": {
         "AttributeDefinitions": {
-          "AttributeName": { "Ref": "SensorElementHashKeyName" },
-          "AttributeType": { "Ref": "SensorElementHashKeyType" }
+          "AttributeName": {
+            "Ref": "SensorElementHashKeyName"
+          },
+          "AttributeType": {
+            "Ref": "SensorElementHashKeyType"
+          }
         },
-        "KeySchema": [ {
-          "AttributeName": { "Ref": "SensorElementHashKeyName" },
-          "KeyType": "HASH"
-        } ],
+        "KeySchema": [
+          {
+            "AttributeName": {
+              "Ref": "SensorElementHashKeyName"
+            },
+            "KeyType": "HASH"
+          }
+        ],
         "ProvisionedThroughput": {
-          "ReadCapacityUnits": { "Ref": "ReadCapacityUnits" },
-          "WriteCapacityUnites": { "Ref": "WriteCapacityUnits" }
+          "ReadCapacityUnits": {
+            "Ref": "ReadCapacityUnits"
+          },
+          "WriteCapacityUnites": {
+            "Ref": "WriteCapacityUnits"
+          }
+        }
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "76c5c26f-954b-45f5-9f28-482669d0e040"
         }
       }
     },
@@ -227,7 +393,17 @@
         "Code": "",
         "MemorySize": "128",
         "Timeout": "3",
-        "Role": { "Fn::GetAtt": ["LambdaExecutionRole", "Arn" ] }
+        "Role": {
+          "Fn::GetAtt": [
+            "LambdaExecutionRole",
+            "Arn"
+          ]
+        }
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "ae4ab35b-aece-4b4b-9470-94cf8f8d6b33"
+        }
       }
     },
     "LambdaExecutionRole": {
@@ -235,16 +411,43 @@
       "Properties": {
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",
-          "Statement": [{ "Effect": "Allow", "Principal": {"Service": ["lambda.amazonaws.com"]}, "Action": ["sts:AssumeRole"] }]
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
         },
         "Path": "/",
-        "Policies": [{
-          "PolicyName": "root",
-          "PolicyDocument": {
-            "Version": "2012-10-17",
-            "Statement": [{ "Effect": "Allow", "Action": ["logs:*"], "Resource": "arn:aws:logs:*:*:*" }]
+        "Policies": [
+          {
+            "PolicyName": "root",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:*"
+                  ],
+                  "Resource": "arn:aws:logs:*:*:*"
+                }
+              ]
+            }
           }
-        }]
+        ]
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "3b8dd3a0-ac87-4f95-9fb9-8513e2fb72d5"
+        }
       }
     },
     "ScalingRole": {
@@ -290,14 +493,194 @@
             }
           }
         ]
+      },
+      "Metadata": {
+        "AWS::CloudFormation::Designer": {
+          "id": "9312fbcd-12a5-4578-8565-80643aa979a2"
+        }
       }
     }
   },
-
   "Outputs": {
     "AllSecurityGroups": {
       "Description": "Security Groups that are associated with the EC2 instance",
-      "Value": { "Fn::Join": [", ", {"Fn:GetAtt": ["AllSecurityGroups", "Value"] }]}
+      "Value": {
+        "Fn::Join": [
+          ", ",
+          {
+            "Fn:GetAtt": [
+              "AllSecurityGroups",
+              "Value"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "Metadata": {
+    "AWS::CloudFormation::Designer": {
+      "9312fbcd-12a5-4578-8565-80643aa979a2": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 90,
+          "y": 90
+        },
+        "z": 1,
+        "embeds": []
+      },
+      "3b8dd3a0-ac87-4f95-9fb9-8513e2fb72d5": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 340,
+          "y": 450
+        },
+        "z": 1,
+        "embeds": []
+      },
+      "ae4ab35b-aece-4b4b-9470-94cf8f8d6b33": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 470,
+          "y": 450
+        },
+        "z": 1,
+        "embeds": []
+      },
+      "76c5c26f-954b-45f5-9f28-482669d0e040": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": -20,
+          "y": 200
+        },
+        "z": 1,
+        "embeds": []
+      },
+      "3b409707-2579-4da0-af6d-c5d1bf9f2b83": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 280,
+          "y": 90
+        },
+        "z": 1,
+        "embeds": []
+      },
+      "08601ed7-8c6c-4b80-b903-9025b73e0fb0": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 280,
+          "y": 200
+        },
+        "z": 1,
+        "embeds": []
+      },
+      "2a696356-1325-4410-8841-ab39dce56df3": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 100,
+          "y": 320
+        },
+        "z": 1,
+        "embeds": [],
+        "isassociatedwith": [
+          "08601ed7-8c6c-4b80-b903-9025b73e0fb0"
+        ]
+      },
+      "d79d023e-5e71-4966-b5fb-36c272fc964d": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 100,
+          "y": 200
+        },
+        "z": 1,
+        "embeds": []
+      },
+      "e3f84ff1-9cca-40a1-8cd7-0f7163e93ac4": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 460,
+          "y": 320
+        },
+        "z": 1,
+        "embeds": [],
+        "isassociatedwith": [
+          "08601ed7-8c6c-4b80-b903-9025b73e0fb0"
+        ]
+      },
+      "c7c59f5d-b277-4268-be14-5a026fd21afd": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 460,
+          "y": 200
+        },
+        "z": 1,
+        "embeds": []
+      },
+      "9f1823d0-c602-43da-bc2e-73b714557816": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 220,
+          "y": 450
+        },
+        "z": 1,
+        "embeds": []
+      },
+      "40f1acb7-141e-4206-a8ba-4edd2369938b": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": -30,
+          "y": 450
+        },
+        "z": 1,
+        "embeds": []
+      },
+      "d575946e-5766-42bb-9bfe-54659c1b01f7": {
+        "size": {
+          "width": 60,
+          "height": 60
+        },
+        "position": {
+          "x": 90,
+          "y": 450
+        },
+        "z": 1,
+        "embeds": []
+      }
     }
   }
 }

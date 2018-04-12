@@ -1,5 +1,6 @@
 package com.amazonaws.lambda.interx;
-public class SensorRequest {
+
+public class SensorEvent {
     private String timestamp;
     private String factoryId;
     private String iotCode;
@@ -14,6 +15,13 @@ public class SensorRequest {
         return timestamp;
     }
 
+    public void setFactoryId(String factoryId) {
+        this.factoryId = factoryId;
+    }
+
+    public String getFactoryId() {
+        return factoryId;
+    }
 
     public void setIotCode(String iotCode) {
         this.iotCode = iotCode;
@@ -32,9 +40,9 @@ public class SensorRequest {
         return content;
     }
 
-    public SensorRequest() { }
+    public SensorEvent() { }
 
-    public SensorRequest(String timestamp, String factoryId, String iotCode, String content) {
+    public SensorEvent(String timestamp, String factoryId, String iotCode, String content) {
         this.timestamp = timestamp;
         this.factoryId = factoryId;
         this.iotCode = iotCode;
